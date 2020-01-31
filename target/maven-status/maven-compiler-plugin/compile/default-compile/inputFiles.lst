@@ -1,6 +1,10 @@
 C:\Users\Usuario\CodeBay\source\customerapi\src\main\java\com\test\customerapi\controllers\UserController.java
 C:\Users\Usuario\CodeBay\source\customerapi\src\main\java\com\test\customerapi\CustomerapiApplication.java
 C:\Users\Usuario\CodeBay\source\customerapi\src\main\java\com\test\customerapi\controllers\SingleWebPageController.java
+C:\Users\Usuario\CodeBay\source\customerapi\src\main\java\com\test\customerapi\exceptions\UserValidationException.java
+C:\Users\Usuario\CodeBay\source\customerapi\src\main\java\com\test\customerapi\models\AppUser.java
+C:\Users\Usuario\CodeBay\source\customerapi\src\main\java\com\test\customerapi\services\AppUserService.java
+C:\Users\Usuario\CodeBay\source\customerapi\src\main\java\com\test\customerapi\exceptions\TooManyRequestsException.java
 C:\Users\Usuario\CodeBay\source\customerapi\src\main\java\com\test\customerapi\exceptions\ResourceNotFoundException.java
 C:\Users\Usuario\CodeBay\source\customerapi\src\main\java\com\test\customerapi\services\UserFilter.java
 C:\Users\Usuario\CodeBay\source\customerapi\src\main\java\com\test\customerapi\services\UserService.java

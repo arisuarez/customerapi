@@ -1,4 +1,4 @@
-package com.test.customerapi.services;
+package com.test.customerapi.filters;
 
 public class UserFilter {
     public enum OrderTypeEnum {

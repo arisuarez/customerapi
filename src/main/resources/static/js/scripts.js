@@ -2,82 +2,106 @@ var app1 = new Vue({
     el: '#app-1',
     data: {
         loading: true,
+
+        // Filter the list of users
         filter: {
             activeOnly: true,
             cityStartsWith: '',
             orderByCreationDate: false,
             orderType: 'asc'
         },
-        cities: [],
+
+        // List of users
         users: [],
-        user: {
-            id: 0,
-            name: null,
-            surname: null,
-            email: null,
-            city: null,
-            birthdate: null,
-            active: true
-        },
+
+        // Allow creates a new user
+        user: { name: null, surname: null, email: null, city: null, birthdate: null, active: true },
+
+        // Message in the create user modal
+        errorMessage: null,
+
+        // Message in the main page
+        message: null,
+        messageType: 'primary'
     },
     methods: {
+
+        /**
+         * Search method: allows filter the user list
+         */
         search: function () {
-            console.log(this.filter);
-//             let params = {}
-//             if (this.filter.activeOnly) {
-//                 params.activeOnly = 1
-//             }
-//             if (this.filter.cityStartsWith) {
-//                 params.cityStartsWith = this.filter.cityStartsWith
-//             }
-//             if (this.filter.orderByCreationDate) {
-//                 params.orderBy = 'createdAt'
-//                 params.orderType = this.filter.orderType
-//             }
-//             console.log('Search', params)
-
-//             var params1 = {params: {...this.filter, orderBy: (this.filter.orderByCreationDate ? 'createdAt' : null)}}
-// console.log('pepe', params1);
-
+            this.message = null
             axios
                 .get('/api/users', { params: this.filter })
                 .then(response => {
-                    console.log(response)
-                    this.users = response.data.map(function (x) {
-                        x.birthday = moment(String(x.birthday)).format('MM/DD/YYYY')
-                        x.createdAt = moment(String(x.createdAt)).format('MM/DD/YYYY')
-                        return x
-                    })
+                    this.users = response.data.map(user => this.parseUser(user))
                 })
                 .catch(error => {
-                    console.log(error)
-                    // TODO mostrar mensaje
-                    this.errored = true
+                    console.log(error.response)
+                    switch (error.response.status) {
+                        case 400:
+                        case 429:
+                            if (error.response.data.message) {
+                                this.setMessage(error.response.data.message, 'danger')
+                                break;
+                            }
+                        default:
+                            this.setMessage('An error ocurred!', 'danger')
+                    }
                 })
                 .finally(() => this.loading = false)
         },
-        showModal: function() {
+        // Parse dates to avoid create vuejs directives
+        parseUser: function(user) {
+            user.birthday = moment(String(user.birthday)).format('MM/DD/YYYY')
+            user.createdAt = moment(String(user.createdAt)).format('MM/DD/YYYY')
+            return user
+        },
+
+        // Prepares a new empty user data and show the modal to create new one
+        newUser: function() {
+            this.errorMessage = null
+            this.user = { name: null, surname: null, email: null, city: null, birthdate: null, active: true }
             $('#addNewUserModal').modal('show')
         },
+
+        // Calls post method to create the new user
         createUser: function() {
+            this.errorMessage = null
             axios.post('/api/users', this.user)
             .then(response => {
-                console.log('Create response', response)
-                // this.users = response.data.map(function (x) {
-                //     x.birthday = moment(String(x.birthday)).format('MM/DD/YYYY')
-                //     x.createdAt = moment(String(x.createdAt)).format('MM/DD/YYYY')
-                //     return x
-                // })
+                this.users.unshift(this.parseUser(response.data))
+                this.setMessage("The user " + response.data.name + " was created with id " + response.data.id + ".")
+                $('#addNewUserModal').modal('hide')
             })
             .catch(error => {
-                console.log('Create user error', error)
-                // TODO mostrar mensaje
-                this.errored = true
+                console.log('Create user error', error.response)
+                switch (error.response.status) {
+                    case 400:
+                    case 429:
+                        if (error.response.data.message) {
+                            this.errorMessage = error.response.data.message
+                            break;
+                        }
+                    default:
+                        this.errorMessage = 'An error ocurred!'
+                }
             })
-            .finally(() => this.loading = false)
+        },
+
+        /**
+         * Shows a new message in the main page
+         * @param {*} message 
+         * @param {*} type 
+         */
+        setMessage: function(message, type) {
+            if (!type) type = 'primary'
+            this.message = message
+            this.messageType = type
         }
     },
     mounted() {
+        // First request to get the user list
         this.search()
     }
 })

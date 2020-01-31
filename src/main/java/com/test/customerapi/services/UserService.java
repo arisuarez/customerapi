@@ -5,47 +5,54 @@ import org.ajbrown.namemachine.NameGenerator;
 import org.ajbrown.namemachine.NameGeneratorOptions;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.test.customerapi.models.User;
-import com.test.customerapi.services.UserFilter.OrderTypeEnum;
+import com.test.customerapi.filters.UserFilter;
+import com.test.customerapi.filters.UserFilter.OrderTypeEnum;
 
+/**
+ * Users service
+ */
 @Component
 public class UserService {
+
+    // Necessary data to generate random users
     private final int LENGTH = 100;
-    private final String[] cities = {"Santa Cruz de Tenerife", "Barcelona", "Madrid", "Las Palmas", "Sevilla"};
+    private final String[] cities = {"Santa Cruz de Tenerife", "Barcelona", "Madrid", "Las Palmas", "Sevilla", "La Laguna", "Valencia"};
+
     private HashMap<Long, User> customers;
 
     public UserService() {
         generateDummyData();
     }
     
-    public List<User> all() {
-        return customers.values().stream()
-            .collect(Collectors.toList());
-    }
-
-    public List<User> find(UserFilter filter) {
+    /**
+     * Method to allow perform several search types
+     * @param filter Added only requested filters in the exercise
+     */
+    public List<User> find(final UserFilter filter) {
         Stream<User> stream = customers.values().stream();
 
+        // Filter active only
         if (filter.isActiveOnly()) {
             stream = stream.filter(p -> p.getActive());
         }
+
+        // Filter the user list with the city start text
         if (filter.getCity() != null) {
-            String text = filter.getCity().toLowerCase();
+            final String text = filter.getCity().toLowerCase();
             stream = stream.filter(p -> p.getCity() != null && p.getCity().toLowerCase().startsWith(text));
         }
+
+        // Order by creation date
         if ("createdAt".equals(filter.getOrderBy())) {
             if (filter.getOrderType() == OrderTypeEnum.ASC) {
                 stream = stream.sorted((a, b) -> a.getCreatedAt().compareTo(b.getCreatedAt()));
@@ -56,31 +63,20 @@ public class UserService {
         return stream.collect(Collectors.toList());
     }
 
-    public Optional<User> get(long id) {
-        return customers.values().stream()
-            .filter(p -> p.getId() == id)
-            .findFirst();
-    }
+    /**
+     * Method to add a new user to the repository
+     * 
+     * @param user
+     */
+    public void add(final User user) {
 
-    public void add(User user) {
+        // Generate unique id: at this moment we can't remove customers. So the
+        // generated number can't repeat
+        user.setId((long) customers.size() + 1);
+        user.setCreatedAt(new Date());
 
-        // customers.add(user);
-    }
-    public void update(User customer) {
-    }
-    public void remove(long id) {
-    }
-
-    public List<String> getCitiesStartsWith(String text) {
-        return customers.values().stream()
-            .filter(p -> p.getCity() != null && p.getCity().toLowerCase().startsWith(text.toLowerCase()))
-            .map(p -> p.getCity())
-            .distinct()
-            .collect(Collectors.toList());
-    }
-
-    public String[] getCities() {
-        return cities;
+        // Adds it to the user list
+        customers.put(user.getId(), user);
     }
 
     /**
@@ -89,22 +85,22 @@ public class UserService {
     private void generateDummyData() {
         customers = new HashMap<>();
 
-        Random r = new Random();
-        Date d1 = new GregorianCalendar(1945, 0, 1).getTime();
-        Date d2 = new GregorianCalendar(2015, 11, 31).getTime();
-        Date d3 = new GregorianCalendar(2015, 0, 1).getTime();
-        Date d4 = new GregorianCalendar(2019, 0, 30).getTime();
-        NameGenerator generator = new NameGenerator(new NameGeneratorOptions());
+        final Random r = new Random();
+        final Date d1 = new GregorianCalendar(1945, 0, 1).getTime();
+        final Date d2 = new GregorianCalendar(2015, 11, 31).getTime();
+        final Date d3 = new GregorianCalendar(2015, 0, 1).getTime();
+        final Date d4 = new GregorianCalendar(2019, 0, 30).getTime();
+        final NameGenerator generator = new NameGenerator(new NameGeneratorOptions());
 
         for (long i = 0; i < this.LENGTH; i++) {
-            Name name = generator.generateName();
-            
-            User item = new User();
+            final Name name = generator.generateName();
+
+            final User item = new User();
             item.setId(i + 1);
             item.setName(name.getFirstName());
             item.setSurname(name.getLastName());
             item.setActive(generateRandomBoolean());
-            item.setEmail(String.format("%s@testcompany.com", item.getName().toLowerCase()));
+            item.setEmail(String.format("%s@company.com", item.getName().toLowerCase()));
             item.setCity(cities[r.nextInt(cities.length)]);
             item.setBirthday(new Date(ThreadLocalRandom.current().nextLong(d1.getTime(), d2.getTime())));
             item.setCreatedAt(new Date(ThreadLocalRandom.current().nextLong(d3.getTime(), d4.getTime())));

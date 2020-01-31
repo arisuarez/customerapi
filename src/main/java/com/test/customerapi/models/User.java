@@ -2,6 +2,10 @@ package com.test.customerapi.models;
 
 import java.util.Date;
 
+/**
+ * User model
+ * Can be used as database model if necessary
+ */
 public class User {
     private Long id;
     private String name;

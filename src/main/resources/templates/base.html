@@ -53,9 +53,14 @@
             </div>
           </div>
           <button type="submit" class="btn btn-sm btn-primary">Load users</button>
-          <button type="button" class="btn btn-sm float-right" v-on:click="showModal">Add new user</button>
+          <button type="button" class="btn btn-sm float-right" v-on:click="newUser">Add new user</button>
         </form>
       </div>
+
+      <div class="alert alert-primary alert-dismissible fade show" role="alert" v-if="message != null">
+        {{ message }}
+      </div>
+
       <div class="row">
         <div class="col-md-6">
           <div v-if="users.length == 0">Please, change filters or add a new user</div>
@@ -96,7 +101,7 @@
 
     <div id="overlay" v-if="loading">
       <div class="progress">
-        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75"
+        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100"
           aria-valuemin="0" aria-valuemax="100" style="width: 75%"></div>
       </div>
     </div>
@@ -134,9 +139,12 @@
                 <label class="form-check-label" for="user_active">User is active</label>
               </div>
             </form>
-            <small>All fields are required</small>
+            <div class="alert alert-danger mt-3 mb-0" role="alert" v-if="errorMessage != null">
+              {{ errorMessage }}
+            </div>            
           </div>
           <div class="modal-footer">
+            <small style="margin-right:auto">(*) All fields are required</small>
             <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cancel</button>
             <button type="button" class="btn btn-sm btn-primary" v-on:click="createUser">Create</button>
           </div>
